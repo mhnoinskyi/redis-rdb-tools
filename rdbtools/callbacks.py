@@ -134,6 +134,134 @@ class JSONCallback(RdbCallback):
         self._end_key(key)
         self._out.write(b'}')
 
+class JSONRichCallback(RdbCallback):
+    def __init__(self, out, string_escape=None):
+        if string_escape is None:
+            string_escape = encodehelpers.STRING_ESCAPE_UTF8
+        super(JSONRichCallback, self).__init__(string_escape)
+        self._out = out
+        self._is_first_db = True
+        self._has_databases = False
+        self._is_first_key_in_db = True
+        self._elements_in_key = 0
+        self._element_index = 0
+
+    def encode_key(self, key):
+        key = encodehelpers.bytes_to_unicode(key, self._escape, skip_printable=True)
+        return codecs.encode(json.dumps(key), 'utf-8')
+
+    def encode_value(self, val):
+        val = encodehelpers.bytes_to_unicode(val, self._escape)
+        return codecs.encode(json.dumps(val), 'utf-8')
+
+    def start_rdb(self):
+        self._out.write(b'[')
+
+    def start_database(self, db_number):
+        if not self._is_first_db:
+            self._out.write(b'}},')
+        self._out.write(b'{' + self.encode_key(db_number) + b':{')
+        self._is_first_db = False
+        self._has_databases = True
+        self._is_first_key_in_db = True
+
+    def end_database(self, db_number):
+        pass
+
+    def end_rdb(self):
+        if self._has_databases:
+            self._out.write(b'}')
+        self._out.write(b']')
+
+    def _start_key(self, key, length):
+        if not self._is_first_key_in_db:
+            self._out.write(b',')
+        self._out.write(b'\r\n')
+        self._is_first_key_in_db = False
+        self._elements_in_key = length
+        self._element_index = 0
+
+    def _end_key(self, key):
+        pass
+
+    def _write_comma(self):
+        if self._element_index > 0 and self._element_index < self._elements_in_key:
+            self._out.write(b',')
+        self._element_index = self._element_index + 1
+
+    def set(self, key, value, expiry, info):
+        self._start_key(key, 0)
+        self._out.write(b'{"key":' + self.encode_key(key) + b',"type":"string","value":' + self.encode_value(value) + b'}')
+        self._end_key(key)
+
+    def start_hash(self, key, length, expiry, info):
+        self._start_key(key, length)
+        self._out.write(b'{"key":' + self.encode_key(key) + b',"type":"hash","value":{')
+
+    def hset(self, key, field, value):
+        self._write_comma()
+        self._out.write(self.encode_key(field) + b':' + self.encode_value(value))
+
+    def end_hash(self, key):
+        self._end_key(key)
+        self._out.write(b'}}')
+
+    def start_set(self, key, cardinality, expiry, info):
+        self._start_key(key, cardinality)
+        self._out.write(b'{"key":' + self.encode_key(key) + b',"type":"set","value":[')
+
+    def sadd(self, key, member):
+        self._write_comma()
+        self._out.write(self.encode_value(member))
+
+    def end_set(self, key):
+        self._end_key(key)
+        self._out.write(b']}')
+
+    def start_list(self, key, expiry, info):
+        self._start_key(key, 0)
+        self._out.write(b'{"key":' + self.encode_key(key) + b',"type":"list","value":[')
+
+    def rpush(self, key, value):
+        self._elements_in_key += 1
+        self._write_comma()
+        self._out.write(self.encode_value(value))
+
+    def end_list(self, key, info):
+        self._end_key(key)
+        self._out.write(b']}')
+
+    def start_sorted_set(self, key, length, expiry, info):
+        self._start_key(key, length)
+        self._out.write(b'{"key":' + self.encode_key(key) + b',"type":"sortedset","value":{')
+
+    def zadd(self, key, score, member):
+        self._write_comma()
+        self._out.write(self.encode_key(member) + b':' + self.encode_value(score))
+
+    def end_sorted_set(self, key):
+        self._end_key(key)
+        self._out.write(b'}}')
+
+    def start_stream(self, key, listpacks_count, expiry, info):
+        self._start_key(key, 0)
+        self._out.write(b'{"key":' + self.encode_key(key) + b',"type":"stream","value":{')
+
+    def end_stream(self, key, items, last_entry_id, cgroups):
+        self._end_key(key)
+        self._out.write(b'}}')
+
+    def start_module(self, key, module_name, expiry, info):
+        if key is None:
+            key = "__aux__"
+        self._start_key(key, 0)
+        self._out.write(b'"{key":' + self.encode_key(key) + b',"type":"module","value":{')
+        return False
+
+    def end_module(self, key, buffer_size, buffer=None):
+        self._end_key(key)
+        self._out.write(b'}}')
+
 
 class KeysOnlyCallback(RdbCallback):
     def __init__(self, out, string_escape=None):

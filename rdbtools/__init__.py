@@ -1,5 +1,5 @@
 from rdbtools.parser import RdbCallback, RdbParser, DebugCallback
-from rdbtools.callbacks import JSONCallback, DiffCallback, ProtocolCallback, KeyValsOnlyCallback, KeysOnlyCallback
+from rdbtools.callbacks import JSONCallback, DiffCallback, ProtocolCallback, KeyValsOnlyCallback, KeysOnlyCallback, JSONRichCallback
 from rdbtools.memprofiler import MemoryCallback, PrintAllKeys, StatsAggregator, PrintJustKeys
 
 __version__ = '0.1.15'
