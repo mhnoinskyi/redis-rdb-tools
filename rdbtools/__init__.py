@@ -6,5 +6,5 @@ __version__ = '0.1.15'
 VERSION = tuple(map(int, __version__.split('.')))
 
 __all__ = [
-    'RdbParser', 'RdbCallback', 'JSONCallback', 'DiffCallback', 'MemoryCallback', 'ProtocolCallback', 'KeyValsOnlyCallback', 'KeysOnlyCallback', 'PrintJustKeys']
+    'RdbParser', 'RdbCallback', 'JSONCallback', 'DiffCallback', 'MemoryCallback', 'ProtocolCallback', 'KeyValsOnlyCallback', 'KeysOnlyCallback', 'PrintJustKeys', 'JSONRichCallback']
 
