@@ -166,7 +166,7 @@ class JSONRichCallback(RdbCallback):
         self._is_first_key_in_db = True
 
     def end_database(self, db_number):
-        pass
+        self._out.write(b']')
 
     def end_rdb(self):
         if self._has_databases:
