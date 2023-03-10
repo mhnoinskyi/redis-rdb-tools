@@ -189,7 +189,11 @@ class JSONRichCallback(RdbCallback):
 
     def set(self, key, value, expiry, info):
         self._start_key(key, 0)
-        self._out.write(b'{"key":' + self.encode_key(key) + b',"type":"string","value":' + self.encode_value(value) + b'}')
+        self._out.write(b'{"key":{0},{1}"type":"string","value":{2}}'.format(
+            self.encode_key(key),
+            b'"expireat":{},'.format(self.encode_value(expiry)) if expiry else b'',
+            self.encode_value(value)
+        ))
         self._end_key(key)
 
     def start_hash(self, key, length, expiry, info):
@@ -260,7 +264,6 @@ class JSONRichCallback(RdbCallback):
         self._end_key(key)
         self._out.write(b'}}')
 
-
 class KeysOnlyCallback(RdbCallback):
     def __init__(self, out, string_escape=None):
         super(KeysOnlyCallback, self).__init__(string_escape)
@@ -326,7 +329,7 @@ class KeyValsOnlyCallback(RdbCallback):
         pass
     
     def _write_comma(self):
-        if self._element_index > 0 and self._element_index < self._elements_in_key :
+        if self._element_index > 0 and self._element_index < self._elements_in_key:
             self._out.write(b',')
         self._element_index = self._element_index + 1
         
@@ -482,7 +485,6 @@ class DiffCallback(RdbCallback):
 
     def newline(self):
         self._out.write(b'\r\n')
-
 
 def _unix_timestamp(dt):
      return calendar.timegm(dt.utctimetuple())
