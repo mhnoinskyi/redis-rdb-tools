@@ -189,9 +189,10 @@ class JSONRichCallback(RdbCallback):
 
     def set(self, key, value, expiry, info):
         self._start_key(key, 0)
+        expireat = b'"expireat":' + self.encode_value(expiry) + b',' if expiry else b''
         self._out.write(b'{"key":' + self.encode_key(key)
                         + b','
-                        + (b'"expireat":' + self.encode_value(expiry) + b',' if expiry else b'')
+                        + expireat
                         + b'"type":"string","value":'
                         + self.encode_value(value)
                         + b'}')
