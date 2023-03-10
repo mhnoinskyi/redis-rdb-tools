@@ -193,7 +193,6 @@ class JSONRichCallback(RdbCallback):
             expireat = b'"expireat":' + self.encode_value(round(expiry.timestamp())) + b','
         else:
             expireat = b''
-        print(expireat, "\n", self._out)
         self._out.write(b'{"key":' + self.encode_key(key)
                         + b','
                         + expireat
@@ -203,7 +202,11 @@ class JSONRichCallback(RdbCallback):
 
     def start_hash(self, key, length, expiry, info):
         self._start_key(key, length)
-        self._out.write(b'{"key":' + self.encode_key(key) + b',"type":"hash","value":{')
+        if expiry:
+            expireat = b'"expireat":' + self.encode_value(round(expiry.timestamp())) + b','
+        else:
+            expireat = b''
+        self._out.write(b'{"key":' + self.encode_key(key) + b',' + expireat + b'"type":"hash","value":{')
 
     def hset(self, key, field, value):
         self._write_comma()
@@ -215,7 +218,11 @@ class JSONRichCallback(RdbCallback):
 
     def start_set(self, key, cardinality, expiry, info):
         self._start_key(key, cardinality)
-        self._out.write(b'{"key":' + self.encode_key(key) + b',"type":"set","value":[')
+        if expiry:
+            expireat = b'"expireat":' + self.encode_value(round(expiry.timestamp())) + b','
+        else:
+            expireat = b''
+        self._out.write(b'{"key":' + self.encode_key(key) + b',' + expireat + b'"type":"set","value":[')
 
     def sadd(self, key, member):
         self._write_comma()
@@ -227,7 +234,11 @@ class JSONRichCallback(RdbCallback):
 
     def start_list(self, key, expiry, info):
         self._start_key(key, 0)
-        self._out.write(b'{"key":' + self.encode_key(key) + b',"type":"list","value":[')
+        if expiry:
+            expireat = b'"expireat":' + self.encode_value(round(expiry.timestamp())) + b','
+        else:
+            expireat = b''
+        self._out.write(b'{"key":' + self.encode_key(key) + b',' + expireat + b'"type":"list","value":[')
 
     def rpush(self, key, value):
         self._elements_in_key += 1
@@ -240,7 +251,11 @@ class JSONRichCallback(RdbCallback):
 
     def start_sorted_set(self, key, length, expiry, info):
         self._start_key(key, length)
-        self._out.write(b'{"key":' + self.encode_key(key) + b',"type":"sortedset","value":{')
+        if expiry:
+            expireat = b'"expireat":' + self.encode_value(round(expiry.timestamp())) + b','
+        else:
+            expireat = b''
+        self._out.write(b'{"key":' + self.encode_key(key) + b',' + expireat + b'"type":"sortedset","value":{')
 
     def zadd(self, key, score, member):
         self._write_comma()
@@ -252,7 +267,11 @@ class JSONRichCallback(RdbCallback):
 
     def start_stream(self, key, listpacks_count, expiry, info):
         self._start_key(key, 0)
-        self._out.write(b'{"key":' + self.encode_key(key) + b',"type":"stream","value":{')
+        if expiry:
+            expireat = b'"expireat":' + self.encode_value(round(expiry.timestamp())) + b','
+        else:
+            expireat = b''
+        self._out.write(b'{"key":' + self.encode_key(key) + b',' + expireat + b'"type":"stream","value":{')
 
     def end_stream(self, key, items, last_entry_id, cgroups):
         self._end_key(key)
@@ -262,7 +281,11 @@ class JSONRichCallback(RdbCallback):
         if key is None:
             key = "__aux__"
         self._start_key(key, 0)
-        self._out.write(b'"{key":' + self.encode_key(key) + b',"type":"module","value":{')
+        if expiry:
+            expireat = b'"expireat":' + self.encode_value(round(expiry.timestamp())) + b','
+        else:
+            expireat = b''
+        self._out.write(b'"{key":' + self.encode_key(key) + b',' + expireat + b'type":"module","value":{')
         return False
 
     def end_module(self, key, buffer_size, buffer=None):
