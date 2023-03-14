@@ -285,7 +285,7 @@ class JSONRichCallback(RdbCallback):
             expireat = b'"expireat":' + self.encode_value(round(expiry.timestamp())) + b','
         else:
             expireat = b''
-        self._out.write(b'"{key":' + self.encode_key(key) + b',' + expireat + b'type":"module","value":{')
+        self._out.write(b'{"key":' + self.encode_key(key) + b',' + expireat + b'"type":"module","value":{')
         return False
 
     def end_module(self, key, buffer_size, buffer=None):
